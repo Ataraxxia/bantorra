@@ -14,7 +14,9 @@ class Main extends React.Component {
 
     state = {
         step: 1,
-        search_path: '',
+        search_path: '/home/bdrogo/anime/',
+        dest_move_path: '',
+        naming_type: '',
     }
 
     prevStep() {
@@ -49,6 +51,7 @@ class Main extends React.Component {
                 return(
                     <Listing
                         nextStep={this.nextStep}
+                        prevStep={this.prevStep}
                         handleChange={this.handleChange}
                         values={ values }
                     />
