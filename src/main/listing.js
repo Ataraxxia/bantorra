@@ -7,12 +7,19 @@ class Listing extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.filterTable = this.filterTable.bind(this);
         this.prevStep = this.prevStep.bind(this);
+        this.clickRow = this.clickRow.bind(this);
+        this.selectAll = this.selectAll.bind(this);
+        this.deselectAll = this.deselectAll.bind(this);
 
         this.state = { 
             animedata: null,
             filelist: null,
+            filteredfilelist:null,
             isFetching: true,
+            phrase: "",
+            selected_files: {},
          };
 
     }
@@ -31,20 +38,41 @@ class Listing extends React.Component {
 
         };
 
+        var isSelected = false;
+
         fetch( '/api/listing?' + new URLSearchParams(params), options )
         .then( response => response.json() )
         .then( response => {
-            // Do something with response.
-            //console.log(response);
 
             this.setState({ 
                 animedata: response.anime_data,
-                filelist: response.file_list,
+                filelist: response.file_list.map(fileObj => ({ ...fileObj, isSelected})),
                 isFetching: false,
             });
         } );
+    }
 
-        
+    clickRow(event) {
+        //event.currentTarget.classList.toggle('table-active');
+
+        const path = event.currentTarget.getAttribute("path");
+        let selectedflist = {...this.state.selected_files}; // make a local copy of selected file list
+        let flist = this.state.filelist
+
+        flist.filter(o => o.path === path).map(fileObj => {
+            fileObj.isSelected = !fileObj.isSelected;
+        });
+
+        if (selectedflist[path] !== true) {
+            selectedflist[path] = true;
+        } else {
+            delete selectedflist[path];
+        }
+
+        this.setState({
+            selected_files: selectedflist,
+            filelist: flist,
+        });
     }
 
     handleSubmit(event) {
@@ -53,6 +81,42 @@ class Listing extends React.Component {
 
     handleChange(event) {
         this.props.handleChange(event);
+    }
+
+    filterTable(event) {
+        this.setState({
+            phrase: event.target.value.toLowerCase(),
+        });
+    }
+
+    selectAll(event) {
+
+        let selectedflist = {};
+        let flist = this.state.filelist;
+
+        flist.filter(o => o.name.toLowerCase().includes(this.state.phrase)).map(fileObj => {
+            selectedflist[fileObj.path] = true;
+            fileObj.isSelected = true;
+        });
+
+        this.setState({
+            filelist: flist,
+            selected_files: selectedflist,
+        });
+    }
+
+    deselectAll(event){
+        let selectedflist = {};
+        let flist = this.state.filelist;
+
+        flist.filter(o => o.name.toLowerCase().includes(this.state.phrase)).map(fileObj => {
+            fileObj.isSelected = false;
+        });
+
+        this.setState({
+            filelist: flist,
+            selected_files: selectedflist,
+        });
     }
 
     prevStep(event) {
@@ -77,9 +141,9 @@ class Listing extends React.Component {
 
                     <br />
 
-                    <label>Search phrase</label>
-                    <input type="text" name="search_phrase" list="search_phrase" onChange={this.handleChange} />
-                    <datalist id="search_phrase">
+                    <label>Search AniDB show:</label>
+                    <input type="text" name="anidb_show" list="anidb_show" onChange={this.handleChange} />
+                    <datalist id="anidb_show">
                         {Object.entries(this.state.animedata).map(([key, item]) =>
                         <option key={key} value={key}>{item}</option>
                         )}
@@ -91,33 +155,32 @@ class Listing extends React.Component {
 
                     <label htmlFor="namingTitleJP">Show title JP</label>
                     <input type="radio" name="naming_type" value="jp" onChange={this.handleChange} />
-                    
+                    <br />
                     <label htmlFor="namingID">AniDB ID</label>
                     <input type="radio" name="naming_type" value="id" onChange={this.handleChange} />
                     
                     <br />
 
-                    <button className="btn btn-primary">Select all</button>
-                    <button className="btn btn-primary">Deselect all</button>
+                    <button className="btn btn-primary" onClick={this.selectAll}>Select all</button>
+                    <button className="btn btn-primary" onClick={this.deselectAll}>Deselect all</button>
 
                     <button className="btn btn-primary">Submit</button>
                 </form>
 
                 <div>
+                    <input type="text" name="filter_phrase" onChange={this.filterTable} />
                     <table className="table table-stripped">
                     <thead>
-                        <tr key="header">
+                        <tr>
                             <th>File name</th>
-                            <th style={{display:"none"}}>Path</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {Object.entries(this.state.filelist).map(([i, fileObj]) =>
+                    {this.state.filelist.filter(o => o.name.toLowerCase().includes(this.state.phrase)).map( fileObj => (
                             <tr>
-                                <td>{fileObj.name}</td>
-                                <td style={{display:"none"}}>{fileObj.path}</td>
+                                <td className={fileObj.isSelected ? "table-active" : ""} onClick={this.clickRow} path={fileObj.path}>{fileObj.name}</td>
                             </tr>
-                        )}
+                        ))}
                     </tbody>
                     </table>
                 </div>
