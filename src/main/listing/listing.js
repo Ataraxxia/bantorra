@@ -8,7 +8,6 @@ class Listing extends React.Component {
     constructor(props) {
         super(props);
 
-        this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.prevStep = this.prevStep.bind(this);
 
@@ -62,26 +61,22 @@ class Listing extends React.Component {
 
     handleSubmit(event) {
 
-        const params = {
-            path: this.props.values.search_path,
-            anidb_id: 1,
-            naming_convention: "id",
-            destination: "",
-            files: this.state.selectedRows.map( row => row.original)
-        };
-        const options = {
-            method: 'POST',
-            body: JSON.stringify( params ) //only with POST 
+        var flag = false;
 
-        };
+        Object.keys(this.props.values).map(key => {
+            console.log(this.props.values[key]);
+            if (this.props.values[key] === null) {
+                flag = true;
+            }
+        })
 
-        fetch( '/api/movefiles', options );
-
+        if (flag) {
+            console.log("missing args");
+            alert("Missing arguments!");
+        } else {
+            this.props.nextStep();
+        }
         event.preventDefault();
-    }
-
-    handleChange(event) {
-        this.props.handleChange(event);
     }
 
     prevStep(event) {
@@ -97,43 +92,36 @@ class Listing extends React.Component {
             );
         }
 
-        if (this.state.isMoving) {
-            return (
-                <div>
-                    <h1>Moving files</h1>
-                </div>
-            );
-        }
-
         return (
             <div className='row'>
                 <div className='column' style={{textAlign: "left", margin: "15px"}}>
                     <button className="btn btn-primary" onClick={this.prevStep}>Back</button>
-                    <form onSubmit={this.handleSubmit}>
+                    <form onSubmit={this.handleSubmit} style={{margin: "10px"}}>
                         <label>Destination path</label>
-                        <input type="text"  name="dest_move_path" onChange={this.handleChange} />
+                        <input type="text"  name="dest_move_path" onChange={this.props.handleChange} />
 
                         <br />
 
                         <label>Search AniDB show:</label>
-                        <input type="text" name="anidb_show" list="anidb_show" onChange={this.handleChange} />
+                        <input type="text" name="anidb_show" list="anidb_show" onChange={this.props.handleChange} />
                         <datalist id="anidb_show">
                             {Object.entries(this.state.animedata).map(([key, item]) =>
                             <option key={key} value={key}>{item}</option>
                             )}
                         </datalist>
 
-                        <br />
+                        <br /><br />
 
                         <label>Naming convention for directories: </label><br />
 
+                        <input type="radio" name="naming_type" value="jp" onChange={this.props.handleChange} />        
                         <label htmlFor="namingTitleJP">Show title JP</label>
-                        <input type="radio" name="naming_type" value="jp" onChange={this.handleChange} />
+                       
                         <br />
+                        <input type="radio" name="naming_type" value="id" onChange={this.props.handleChange} />
                         <label htmlFor="namingID">AniDB ID</label>
-                        <input type="radio" name="naming_type" value="id" onChange={this.handleChange} />
                         
-                        <br />
+                        <br /><br />
 
                         <button className="btn btn-primary" onClick={this.handleSubmit}>Submit</button>
                     </form>
@@ -141,7 +129,7 @@ class Listing extends React.Component {
 
                 <div className='triple-column'>
                     <Table 
-                        onRowSelect={rows => this.setState({selectedRows: rows})}
+                        onRowSelect={rows => this.props.handleUpdate("selected_files", rows.map( row => row.original))}
                         columns={this.state.columns} 
                         data={this.state.filelist} />
                 </div>

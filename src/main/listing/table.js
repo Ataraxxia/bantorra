@@ -64,7 +64,8 @@ export default function Table({ columns, data, onRowSelect }) {
 
     React.useEffect(() => {
       onRowSelect(selectedFlatRows);
-    }, [selectedFlatRows]);
+    });
+    //}, [onRowSelect, selectedFlatRows]);
   
     /* 
       Render the UI for your table

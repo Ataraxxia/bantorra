@@ -1,6 +1,7 @@
 import React from 'react'
 import SearchPath from './searchpath/searchpath'
 import Listing from './listing/listing'
+import Move from './move/move'
 
 class Main extends React.Component {
 
@@ -8,6 +9,7 @@ class Main extends React.Component {
         super(props);
 
         this.handleChange = this.handleChange.bind(this);
+        this.handleUpdate = this.handleUpdate.bind(this);
         this.nextStep = this.nextStep.bind(this);
         this.prevStep = this.prevStep.bind(this);
     }
@@ -15,8 +17,10 @@ class Main extends React.Component {
     state = {
         step: 1,
         search_path: '/home/bdrogo/anime/',
-        dest_move_path: '',
-        naming_type: '',
+        dest_move_path: null,
+        naming_type: null,
+        anidb_show: null,
+        selected_files: null,
     }
 
     prevStep() {
@@ -33,10 +37,13 @@ class Main extends React.Component {
         this.setState({ [event.target.name]: event.target.value });
     }
 
+    handleUpdate(name, value) {
+        this.setState({[name]: value})
+    }
+
     render() {
         const { step } = this.state;
-        const { search_path } = this.state;
-        const values = { search_path }
+        const values = { ...this.state }
 
         switch(step) {
             case 1:
@@ -53,6 +60,14 @@ class Main extends React.Component {
                         nextStep={this.nextStep}
                         prevStep={this.prevStep}
                         handleChange={this.handleChange}
+                        handleUpdate={this.handleUpdate}
+                        values={ values }
+                    />
+                )
+            case 3:
+                return (
+                    <Move 
+                        prevStep={this.prevStep}
                         values={ values }
                     />
                 )
