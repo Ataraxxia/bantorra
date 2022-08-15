@@ -1,6 +1,6 @@
 import React from 'react'
-import SearchPath from './searchpath'
-import Listing from './listing'
+import SearchPath from './searchpath/searchpath'
+import Listing from './listing/listing'
 
 class Main extends React.Component {
 
