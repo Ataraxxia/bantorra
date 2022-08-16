@@ -1,9 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, make_response
 from pathlib import Path
+import re
+import os
+import shutil
 
 from helpers import *
 
 app = Flask(__name__)
+
+ANIME_DATA = loadAniDBDataDump('anime-titles.dat')
 
 @app.route('/healthcheck')
 def get_current_time():
@@ -13,7 +18,6 @@ def get_current_time():
 @app.route('/api/listing', methods=['GET'])
 def listing():
     print("got req")
-    animeData = loadAniDBDataDump('anime-titles.dat')
     path = request.args.get('path')
     files = list(Path(path).rglob("*.[ma][kpv][vi4]")) #match mkv mp4 avi
 
@@ -21,21 +25,21 @@ def listing():
     for f in files:
         fileList.append({"name": '{}'.format(f.name), "path": '{}'.format(f.resolve())})
 
-    resp = {"anime_data": animeData, "file_list": fileList }
+    resp = {"anime_data": ANIME_DATA, "file_list": fileList }
     return resp
 
 
 @app.route('/api/movefiles', methods=['POST'])
 def movefiles():
-    animeData = loadAniDBDataDump('anime-titles.dat')
-
+    print("got POST req")
+    print(request)
     moving_info = request.get_json()
     print(moving_info)
 
-    anidb_id = moving_info['anidbid']
-    naming_convention = moving_info['namingConvention']
+    anidb_id = moving_info['anidb_id']
+    naming_convention = moving_info['naming_convention']
     destination = moving_info['destination']
-    files = moving_info['selected']
+    files = moving_info['files']
 
     if destination[-1] == '/':
         destination = destination[:-1]
@@ -44,8 +48,9 @@ def movefiles():
 
     match naming_convention:
         case 'jp':
-            title = re.sub('[^a-zA-Z0-9 \.\-]', '', animeData[anidb_id])
-            #title = animeData[anidb_id]
+            # Just a precaution,
+            # Leave in only alfanumeric chars and .-!'
+            title = re.sub('[^a-zA-Z0-9 \.\-\!\']', '', ANIME_DATA[anidb_id])
             path = '{}/{}'.format(destination, title)
         case 'id':
             path = '{}/{}'.format(destination, anidb_id)
@@ -58,10 +63,13 @@ def movefiles():
         os.makedirs(path)
         print("Created new path")
 
-    files = list(map(itemgetter(1), moving_info['selected']))
-    for file in files:
-        dst = '{}/{}'.format(path, file.split('/')[-1])
-        print('Move {} to {}'.format(file, dst))
-        shutil.move(file, dst)
+    try:
+        for f in files:
+            dst = '{}/{}'.format(path, f['name'].split('/')[-1])
+            #print('Move {} to {}'.format(f, dst))
+            shutil.move(f['path'], dst)
+    except:
+        print("Got exception")
+
 
     return make_response("", 200);

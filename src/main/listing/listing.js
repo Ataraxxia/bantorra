@@ -64,7 +64,6 @@ class Listing extends React.Component {
         var flag = false;
 
         Object.keys(this.props.values).map(key => {
-            console.log(this.props.values[key]);
             if (this.props.values[key] === null) {
                 flag = true;
             }
@@ -98,7 +97,7 @@ class Listing extends React.Component {
                     <button className="btn btn-primary" onClick={this.prevStep}>Back</button>
                     <form onSubmit={this.handleSubmit} style={{margin: "10px"}}>
                         <label>Destination path</label>
-                        <input type="text"  name="dest_move_path" onChange={this.props.handleChange} />
+                        <input type="text"  name="dest_move_path" value={this.props.values.dest_move_path} onChange={this.props.handleChange} />
 
                         <br />
 
@@ -114,7 +113,7 @@ class Listing extends React.Component {
 
                         <label>Naming convention for directories: </label><br />
 
-                        <input type="radio" name="naming_type" value="jp" onChange={this.props.handleChange} />        
+                        <input type="radio" checked="checked" name="naming_type" value="jp" onChange={this.props.handleChange} />        
                         <label htmlFor="namingTitleJP">Show title JP</label>
                        
                         <br />

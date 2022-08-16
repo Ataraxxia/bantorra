@@ -16,9 +16,9 @@ class Main extends React.Component {
 
     state = {
         step: 1,
-        search_path: '/home/bdrogo/anime/',
-        dest_move_path: null,
-        naming_type: null,
+        search_path: '/home/bdrogo/anime/bag',
+        dest_move_path: '/home/bdrogo/anime/neworg',
+        naming_type: 'jp',
         anidb_show: null,
         selected_files: null,
     }
