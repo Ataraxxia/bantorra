@@ -27,3 +27,8 @@ Then everything is accessible under http://localhost:3000
 
 You need to make sure that the user you're running the app as can move and create directories on the source and destination paths!
 
+## Roadmap
+
+- Optimize performance
+- Stylize and improve looks
+- Implement and add support for Bantorra Index
